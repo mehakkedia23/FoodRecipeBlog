@@ -1,6 +1,7 @@
 
 const Recpies=require("../models/recpie.js")
 const multer =require('multer')
+const user = require("../models/user.js")
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -35,7 +36,8 @@ const addRecpie= async(req,res)=>{
        res.json({message:" required fields cant be empty"})
   }
   const newRecpie =await Recpies.create({
-    title,ingredients,instruction,time,coverImage:req.file.filename
+    title,ingredients,instruction,time,coverImage:req.file.filename,
+    createdBy:req.user.id
 
   })
   return res.json(newRecpie)
@@ -46,7 +48,8 @@ const editRecpie=async(req,res)=>{
     const {title,ingredients,instruction,time}=req.body
     let recpie=await Recpies.findById(req.params.id)
    try {if(recpie){
-        await Recpies.findByIdAndUpdate(req.params.id,req.body,{new : true})
+        let coverImage=req.file?.filename ? req.file?.filename:recpie.coverImage
+        await Recpies.findByIdAndUpdate(req.params.id,{...req.body,coverImage},{new : true})
         res.json({title,ingredients,instruction,time})
     }
 }catch(err){
